@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Priceline Express Deal Revealer",
+  "version": "1.0.0",
+  "description": "Works out which hotel a Priceline Express Deal actually is by fingerprinting its amenities and review stats against the guaranteed candidates.",
+  "permissions": ["tabs"],
+  "host_permissions": ["https://www.priceline.com/*"],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.priceline.com/relax/at/*"],
+      "js": ["src/listings-core.js", "src/extractor.js"],
+      "world": "MAIN",
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.priceline.com/relax/at/*"],
+      "js": ["src/bridge.js"],
+      "css": ["src/panel.css"],
+      "world": "ISOLATED",
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.priceline.com/relax-ui/listings*"],
+      "js": ["src/listings-core.js", "src/graph.js", "src/listings.js"],
+      "css": ["src/panel.css"],
+      "world": "ISOLATED",
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Reveal this Express Deal"
+  }
+}

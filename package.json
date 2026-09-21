@@ -1,0 +1,9 @@
+{
+  "name": "priceline-revealer",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node test/verify.mjs && node test/listings.mjs"
+  }
+}

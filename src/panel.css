@@ -1,0 +1,513 @@
+/* Namespaced under .pclnrev so nothing here can bleed into Priceline styles. */
+
+.pclnrev {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2147483000;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #1b1b1f;
+  box-shadow: 0 10px 34px rgba(16, 20, 40, 0.24);
+  font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.pclnrev-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #0d2e6e;
+  color: #ffffff;
+}
+
+.pclnrev-title {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+
+.pclnrev-headbtns {
+  display: flex;
+  gap: 4px;
+}
+
+.pclnrev-icon {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pclnrev-icon:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.pclnrev-body {
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.pclnrev-note {
+  color: #4a4f5c;
+  margin: 4px 0;
+}
+
+.pclnrev-sub {
+  color: #6b7280;
+  font-size: 11px;
+  margin: 8px 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pclnrev-err {
+  padding: 10px;
+  border-radius: 8px;
+  background: #fdecec;
+  color: #8a1c1c;
+}
+
+.pclnrev-warn {
+  margin: 6px 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fff7e6;
+  color: #7a4b00;
+  font-size: 12px;
+}
+
+/* Verdict banner */
+
+.pclnrev-verdict {
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #e3e6ee;
+  background: #f5f7fb;
+}
+
+.pclnrev-v-certain {
+  background: #eaf7ee;
+  border-color: #b7e2c4;
+}
+
+.pclnrev-v-likely {
+  background: #eef4fd;
+  border-color: #bcd4f5;
+}
+
+.pclnrev-v-leaning,
+.pclnrev-v-inconclusive {
+  background: #fff7e6;
+  border-color: #f0d9a8;
+}
+
+.pclnrev-v-unknown {
+  background: #f3f4f6;
+  border-color: #dcdfe5;
+}
+
+.pclnrev-vlabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #4a4f5c;
+}
+
+.pclnrev-vname {
+  font-size: 16px;
+  font-weight: 650;
+  margin-top: 2px;
+}
+
+.pclnrev-vmeta {
+  font-size: 12px;
+  color: #5b6170;
+  margin-top: 2px;
+}
+
+/* Candidate rows */
+
+.pclnrev-cand {
+  padding: 10px 0;
+  border-top: 1px solid #edeff4;
+}
+
+.pclnrev-cand-top {
+  border-top: 0;
+}
+
+.pclnrev-candhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pclnrev-candname {
+  font-weight: 600;
+}
+
+.pclnrev-pct {
+  font-variant-numeric: tabular-nums;
+  color: #0d2e6e;
+  font-weight: 650;
+}
+
+.pclnrev-bar {
+  height: 5px;
+  border-radius: 3px;
+  background: #e9ecf3;
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+.pclnrev-barfill {
+  height: 100%;
+  background: #1a6b3c;
+  border-radius: 3px;
+}
+
+.pclnrev-cand:not(.pclnrev-cand-top) .pclnrev-barfill {
+  background: #98a1b3;
+}
+
+.pclnrev-barfill-busy {
+  background: #0d2e6e;
+}
+
+/* Amenity diffs */
+
+.pclnrev-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.pclnrev-chip {
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  border: 1px solid transparent;
+}
+
+.pclnrev-chip-miss {
+  background: #fdecec;
+  color: #8a1c1c;
+  border-color: #f4cccc;
+}
+
+.pclnrev-chip-extra {
+  background: #eef4fd;
+  color: #1b4a8a;
+  border-color: #cbdcf6;
+}
+
+.pclnrev-chip-strong {
+  font-weight: 700;
+}
+
+.pclnrev-chip-more {
+  background: #f1f2f6;
+  color: #6b7280;
+}
+
+.pclnrev-dq {
+  margin: 6px 0 2px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fdf3f3;
+  border: 1px solid #f4dada;
+}
+
+.pclnrev-dqitem {
+  font-size: 12px;
+  color: #8a1c1c;
+}
+
+.pclnrev-dqitem + .pclnrev-dqitem {
+  margin-top: 3px;
+}
+
+.pclnrev-copy {
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px solid #d3d8e3;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1b1b1f;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pclnrev-copy:hover {
+  background: #f5f7fb;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pclnrev {
+    background: #15171c;
+    color: #e8eaf0;
+  }
+  .pclnrev-note {
+    color: #aab1c0;
+  }
+  .pclnrev-verdict {
+    background: #1c1f27;
+    border-color: #2b3140;
+  }
+  .pclnrev-v-certain {
+    background: #14301f;
+    border-color: #276b42;
+  }
+  .pclnrev-v-likely {
+    background: #16243a;
+    border-color: #2b4a77;
+  }
+  .pclnrev-v-leaning,
+  .pclnrev-v-inconclusive {
+    background: #2e2611;
+    border-color: #6b5620;
+  }
+  .pclnrev-vlabel,
+  .pclnrev-vmeta {
+    color: #aab1c0;
+  }
+  .pclnrev-cand {
+    border-color: #262a34;
+  }
+  .pclnrev-bar {
+    background: #262a34;
+  }
+  .pclnrev-pct {
+    color: #8fb4f5;
+  }
+  .pclnrev-copy {
+    background: #1c1f27;
+    color: #e8eaf0;
+    border-color: #2b3140;
+  }
+  .pclnrev-copy:hover {
+    background: #232733;
+  }
+  .pclnrev-dq {
+    background: #2a1718;
+    border-color: #5d2a2c;
+  }
+  .pclnrev-dqitem,
+  .pclnrev-err {
+    color: #f2b8b8;
+  }
+  .pclnrev-err {
+    background: #2a1718;
+  }
+  .pclnrev-chip-miss {
+    background: #2a1718;
+    color: #f2b8b8;
+    border-color: #5d2a2c;
+  }
+  .pclnrev-chip-extra {
+    background: #16243a;
+    color: #9cc0f7;
+    border-color: #2b4a77;
+  }
+  .pclnrev-chip-more {
+    background: #232733;
+    color: #aab1c0;
+  }
+  .pclnrev-warn {
+    background: #2e2611;
+    color: #e8cf94;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Listings page: per-card badge and summary panel
+ * ------------------------------------------------------------------ */
+
+.pclnrev-summary {
+  width: 320px;
+}
+
+.pclnrev-bignum {
+  font-size: 18px;
+  font-weight: 650;
+  margin-bottom: 2px;
+}
+
+.pclnrev-badge {
+  margin: 8px 0;
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid #d8dce6;
+  background: #f6f8fc;
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  color: #1b1b1f;
+}
+
+.pclnrev-badge-hit {
+  background: #eaf7ee;
+  border-color: #9ed3b1;
+}
+
+.pclnrev-badge-warn {
+  background: #fff7e6;
+  border-color: #eccf94;
+}
+
+.pclnrev-badge-none {
+  background: #f3f4f6;
+  border-color: #d9dce3;
+}
+
+.pclnrev-badge-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #4f5666;
+}
+
+.pclnrev-badge-name {
+  font-size: 15px;
+  font-weight: 650;
+  margin: 1px 0 3px;
+}
+
+.pclnrev-badge-save {
+  font-size: 13px;
+}
+
+.pclnrev-save-good {
+  font-weight: 700;
+  color: #146c38;
+}
+
+.pclnrev-save-bad {
+  font-weight: 700;
+  color: #9a2020;
+}
+
+.pclnrev-save-detail {
+  color: #4f5666;
+}
+
+.pclnrev-badge-total,
+.pclnrev-badge-why {
+  font-size: 12px;
+  color: #5b6170;
+  margin-top: 2px;
+}
+
+.pclnrev-badge-link {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #0d2e6e;
+  text-decoration: underline;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pclnrev-badge {
+    background: #1c1f27;
+    border-color: #2b3140;
+    color: #e8eaf0;
+  }
+  .pclnrev-badge-hit {
+    background: #14301f;
+    border-color: #2c7247;
+  }
+  .pclnrev-badge-warn {
+    background: #2e2611;
+    border-color: #6b5620;
+  }
+  .pclnrev-badge-none {
+    background: #20232b;
+    border-color: #333845;
+  }
+  .pclnrev-badge-kicker,
+  .pclnrev-badge-total,
+  .pclnrev-badge-why,
+  .pclnrev-save-detail {
+    color: #aab1c0;
+  }
+  .pclnrev-save-good {
+    color: #79d69b;
+  }
+  .pclnrev-save-bad {
+    color: #f0a0a0;
+  }
+  .pclnrev-badge-link {
+    color: #8fb4f5;
+  }
+}
+
+.pclnrev-badge-busy {
+  background: #eef4fd;
+  border-color: #bcd4f5;
+}
+
+.pclnrev-badge-btn {
+  margin-top: 6px;
+  padding: 5px 10px;
+  border: 1px solid #b9c2d4;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #0d2e6e;
+  font: 600 12px/1 inherit;
+  cursor: pointer;
+}
+
+.pclnrev-badge-btn:hover {
+  background: #eef2f9;
+}
+
+.pclnrev-autorow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 2px;
+  font-size: 12px;
+  color: #4a4f5c;
+}
+
+.pclnrev-autorow label {
+  cursor: pointer;
+}
+
+.pclnrev-copy + .pclnrev-copy {
+  margin-top: 6px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pclnrev-badge-busy {
+    background: #16243a;
+    border-color: #2b4a77;
+  }
+  .pclnrev-badge-btn {
+    background: #1c1f27;
+    color: #8fb4f5;
+    border-color: #2b3140;
+  }
+  .pclnrev-badge-btn:hover {
+    background: #232733;
+  }
+  .pclnrev-autorow {
+    color: #aab1c0;
+  }
+}
