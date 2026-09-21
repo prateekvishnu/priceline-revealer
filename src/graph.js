@@ -186,13 +186,55 @@
     };
   }
 
+  /* ------------------------------------------------------------------ *
+   * Throttling
+   *
+   * Priceline does not always answer a refusal with a 429. During development
+   * it began returning 200 with a page that never hydrates -- no bootstrap
+   * data, no content -- which is indistinguishable from success unless it is
+   * checked for. Both forms are classified here so the UI can say "we are
+   * being throttled" instead of silently reporting nothing found.
+   * ------------------------------------------------------------------ */
+
+  const OK = "ok";
+  const THROTTLED = "throttled";
+  const FAILED = "failed";
+
+  function classifyResponse(status, contentType, text) {
+    if (status === 429) return THROTTLED;
+    if (status === 403 || status === 503) return THROTTLED;
+    if (status >= 500) return FAILED;
+    if (!status || status >= 400) return FAILED;
+    // A JSON endpoint answering with HTML is an interstitial, not data.
+    const ct = String(contentType || "");
+    if (ct.includes("text/html")) return THROTTLED;
+    if (typeof text === "string" && /^\s*</.test(text)) return THROTTLED;
+    return OK;
+  }
+
+  // A deal page that returns 200 but carries no app bootstrap is the silent
+  // form of the same refusal.
+  function classifyDealPage(status, html) {
+    if (status === 429 || status === 403 || status === 503) return THROTTLED;
+    if (!status || status >= 400) return FAILED;
+    if (typeof html !== "string" || html.length < 2000) return THROTTLED;
+    const hydrated =
+      html.includes("PCLN_BOOTSTRAP_DATA") ||
+      html.includes("__APOLLO") ||
+      html.includes("query getSopqHotelDetails");
+    return hydrated ? OK : THROTTLED;
+  }
+
   /*
-   * Returns the enriched fingerprint for one deal, or null on any failure.
-   * Null is always safe: the caller keeps whatever the listing already gave it.
+   * Returns { state, details }. `details` is only present when state is "ok".
+   *
+   * Callers must distinguish "throttled" from "failed": the first means stop
+   * asking for a while, the second means this one deal did not work out.
    */
   async function dealDetails(opts) {
     const query = await loadQuery(opts.bootstrapUrl);
-    if (!query) return null;
+    if (!query) return { state: FAILED, details: null };
+
     try {
       const res = await fetch(ENDPOINT, {
         method: "POST",
@@ -204,14 +246,37 @@
           variables: variables(opts),
         }),
       });
-      if (!res.ok) return null;
-      const body = await res.json();
-      if (!body || !body.data || !body.data.sopqHotelDetails) return null;
-      return shape(body.data.sopqHotelDetails);
+
+      const text = await res.text();
+      const state = classifyResponse(res.status, res.headers.get("content-type"), text);
+      if (state !== OK) return { state, details: null };
+
+      let body = null;
+      try {
+        body = JSON.parse(text);
+      } catch (_) {
+        return { state: THROTTLED, details: null };
+      }
+      if (!body || !body.data || !body.data.sopqHotelDetails) {
+        return { state: FAILED, details: null };
+      }
+      return { state: OK, details: shape(body.data.sopqHotelDetails) };
     } catch (_) {
-      return null;
+      return { state: FAILED, details: null };
     }
   }
 
-  return { dealDetails, extractQuery, findCguid, shape, ENDPOINT, OP };
+  return {
+    dealDetails,
+    extractQuery,
+    findCguid,
+    shape,
+    classifyResponse,
+    classifyDealPage,
+    ENDPOINT,
+    OP,
+    OK,
+    THROTTLED,
+    FAILED,
+  };
 });

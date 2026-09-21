@@ -511,3 +511,38 @@
     color: #aab1c0;
   }
 }
+
+/* Throttling notice */
+
+.pclnrev-throttle {
+  margin: 0 0 10px;
+  padding: 10px 11px;
+  border-radius: 9px;
+  background: #fdecec;
+  border: 1px solid #f0c4c4;
+}
+
+.pclnrev-throttle-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: #8a1c1c;
+}
+
+.pclnrev-throttle-body {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #6f3030;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pclnrev-throttle {
+    background: #2a1718;
+    border-color: #5d2a2c;
+  }
+  .pclnrev-throttle-title {
+    color: #f2b8b8;
+  }
+  .pclnrev-throttle-body {
+    color: #d9a8a8;
+  }
+}

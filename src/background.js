@@ -203,7 +203,20 @@ async function resolveDeal(url, port, requestId) {
   send({ type: "DEAL_PROGRESS", message: "Opening the deal page" });
   const deal = await readDealPage(url);
   if (!deal.fingerprint) {
-    send({ type: "DEAL_ERROR", error: deal.error || "Could not read the deal page." });
+    /*
+     * A deal page that loads but never reports a fingerprint is the shape
+     * Priceline's throttling takes here: the document arrives, the app never
+     * starts. Saying "throttled" is far more useful than "timed out", because
+     * the answer is to wait rather than to retry immediately.
+     */
+    const timedOut = /timed out/i.test(deal.error || "");
+    send({
+      type: "DEAL_ERROR",
+      throttled: timedOut,
+      error: timedOut
+        ? "Priceline did not render the deal page - most likely throttling us."
+        : deal.error || "Could not read the deal page.",
+    });
     return;
   }
   const fp = deal.fingerprint;

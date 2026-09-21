@@ -4,6 +4,7 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
-    "test": "node test/verify.mjs && node test/listings.mjs"
+    "test": "node test/verify.mjs && node test/listings.mjs && node test/store.mjs",
+    "icons": "node tools/make-icons.mjs"
   }
 }

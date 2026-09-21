@@ -43,6 +43,9 @@ Chrome 111 or newer (the extension uses a `world: "MAIN"` content script).
 2. Turn on **Developer mode**
 3. **Load unpacked** and pick this folder
 
+Icons are generated rather than committed as opaque binaries: `npm run icons` redraws
+them from `tools/make-icons.mjs`, which encodes the PNGs itself using only `node:zlib`.
+
 Then open any Express Deal page. The panel appears bottom-right and starts on its own.
 The toolbar button re-runs it.
 
@@ -235,6 +238,44 @@ much: a 62-entry amenity record is a far stronger fingerprint than a 3-item shor
 and it is what drives the 67% above. The parser still extracts `master_<hotelId>`
 images from the response should a guarantee ever name specific properties.
 
+## Caching: nothing is asked for twice
+
+A deal's amenity record is a property of the hotel, not of today, so once read it is
+kept in `chrome.storage.local` for **seven days** and never requested again.
+`store.js` exposes `getOrFetch` as the only way in, precisely so a fetch cannot happen
+without a cache check first — a cached deal produces no network request at all, and
+there is a test asserting the fetcher is called exactly once across three reads.
+
+Deliberately **not** cached: anything priced. Rates move daily, and a stale one would
+produce a wrong savings figure, which is worse than showing none. Prices are always
+read live.
+
+A failed or throttled request is never written, so a refusal cannot poison the cache
+with an empty record — it simply gets retried later. The panel reports how many deal
+records were reused versus fetched, and expired entries are pruned on each run (with a
+2,000-entry ceiling trimming oldest-first).
+
+## When Priceline throttles
+
+It does throttle, and not always politely: during development it began answering with
+HTTP 200 and a document that never hydrates — no bootstrap data, no content — which is
+indistinguishable from "nothing found" unless you check for it. Silently reporting no
+matches in that situation would be actively misleading.
+
+So both forms are classified and surfaced:
+
+- `429`, `403`, `503` — an explicit refusal
+- HTML from the JSON endpoint, or a JSON body that will not parse — an interstitial
+- a deal page returning 200 with no `PCLN_BOOTSTRAP_DATA` and no app — the silent form
+
+On detection the panel shows a clear notice, **all further requests stop** (including
+ones that scrolling would otherwise queue), and it says that anything already read is
+cached for a week so resuming later costs nothing. Pressing ↻ is an explicit decision
+to try again and lifts the pause.
+
+Stopping rather than retrying is the deliberate choice: a throttle is a request to
+back off, and hammering through it would neither work nor be reasonable.
+
 ## Verdicts
 
 The extension distinguishes how sure it is, and will say when it does not know:
@@ -253,7 +294,7 @@ The extension distinguishes how sure it is, and will say when it does not know:
 npm test
 ```
 
-Two suites, 54 checks, no dependencies.
+Three suites, 67 checks, no dependencies.
 
 `test/listings.mjs` (40 checks) covers the listings parser, the rate parser and the
 matcher: that the
@@ -263,6 +304,9 @@ out on the signal that actually separates it, and that ambiguity, near misses an
 no-match are reported rather than guessed. Field values are from the live Peoria
 listings page; the per-hotel *retail* prices are synthetic and exercise the savings
 arithmetic only — they are not price claims.
+
+`test/store.mjs` (13 checks) covers the week-long cache and the throttle classifier,
+including that a cached deal triggers no fetch and that a refusal is never cached.
 
 `test/verify.mjs` (14 checks) covers the single-deal scorer. `test/fixtures.js` holds
 real data captured on 2026-09-21 from a West Phoenix deal

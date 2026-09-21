@@ -152,8 +152,15 @@
    */
   const ENRICH_CONCURRENCY = 3;
 
+  // Set when Priceline starts refusing. Everything stops asking at that point:
+  // continuing would neither work nor be reasonable behaviour.
+  let throttled = false;
+  let cacheHits = 0;
+  let fetched = 0;
+
   async function enrichAll() {
     const GRAPH = self.PCLNREV_GRAPH;
+    const STORE = self.PCLNREV_STORE;
     if (!GRAPH) return;
 
     const p = new URLSearchParams(location.search);
@@ -165,40 +172,77 @@
     const entries = [...state.values()].filter((s) => !s.deal.enriched);
     if (!entries.length) return;
 
-    // Any deal page will do as the source of the operation text.
     const bootstrapUrl = detailUrl(entries[0].deal);
     if (!bootstrapUrl) return;
 
     let done = 0;
     let cursor = 0;
+
     const worker = async () => {
       for (;;) {
+        if (throttled) return;
         const i = cursor++;
         if (i >= entries.length) return;
         const s = entries[i];
-        const details = await GRAPH.dealDetails({
-          bootstrapUrl,
-          pclnId: s.deal.pclnId || s.deal.token,
-          price: (s.deal.prices || {}).minNightly,
-          checkIn,
-          checkOut,
-          rooms: p.get("rooms") || "1",
-          adults: p.get("adults") || "2",
-          cguid,
-        });
+        const id = s.deal.pclnId || s.deal.token;
+
+        /*
+         * Cache first, always. A deal already read within the week is never
+         * requested again -- STORE.getOrFetch will not call the fetcher when a
+         * fresh entry exists, so this cannot turn into a silent re-scrape.
+         */
+        const key = STORE
+          ? STORE.makeKey("deal", [id, checkIn, checkOut, p.get("rooms") || "1"])
+          : null;
+
+        const fetcher = async () => {
+          const res = await GRAPH.dealDetails({
+            bootstrapUrl,
+            pclnId: id,
+            price: (s.deal.prices || {}).minNightly,
+            checkIn,
+            checkOut,
+            rooms: p.get("rooms") || "1",
+            adults: p.get("adults") || "2",
+            cguid,
+          });
+          if (res.state === GRAPH.THROTTLED) {
+            throttled = true;
+            return null; // never cached, so it will be retried later
+          }
+          return res.state === GRAPH.OK ? res.details : null;
+        };
+
+        let details = null;
+        if (key && STORE) {
+          const got = await STORE.getOrFetch(key, fetcher, STORE.WEEK_MS);
+          details = got.value;
+          if (got.value != null && got.cached) cacheHits++;
+          else if (got.value != null) fetched++;
+        } else {
+          details = await fetcher();
+          if (details) fetched++;
+        }
+
         if (details) s.deal = CORE.enrichDeal(s.deal, details);
         done++;
-        if (done % 5 === 0 || done === entries.length) {
+        if (done % 5 === 0 || done === entries.length || throttled) {
           setStatus(
             "running",
-            "Reading deal records: " + done + "/" + entries.length
+            throttled
+              ? "Priceline is throttling us — stopping"
+              : "Reading deal records: " + done + "/" + entries.length +
+                (cacheHits ? " (" + cacheHits + " from cache)" : "")
           );
         }
       }
     };
+
     await Promise.all(
       Array.from({ length: Math.min(ENRICH_CONCURRENCY, entries.length) }, worker)
     );
+
+    if (STORE) STORE.prune(STORE.WEEK_MS);
   }
 
   async function run() {
@@ -249,6 +293,11 @@
       } else {
         entry.state.phase = "failed";
         entry.state.error = msg.error || "Could not resolve this deal.";
+        // One throttled resolve means the rest will be too; stop the queue.
+        if (msg.throttled) {
+          throttled = true;
+          queue.length = 0;
+        }
       }
       entry.done();
     });
@@ -265,6 +314,7 @@
   }
 
   function enqueue(token) {
+    if (throttled) return; // scrolling must not keep queueing work that will fail
     const s = state.get(token);
     if (!s) return;
     if (s.phase !== "unresolved" && s.phase !== "failed") return;
@@ -673,6 +723,7 @@
       : "Re-read this page";
     again.addEventListener("click", () => {
       if (status.phase === "running") return;
+      throttled = false; // a retry is an explicit decision to try again
       if (failedTokens.length) {
         retryFailed();
         return;
@@ -736,10 +787,34 @@
       else unresolved++;
     }
 
+    if (throttled) {
+      const warn = el("div", "pclnrev-throttle");
+      warn.appendChild(el("div", "pclnrev-throttle-title", "Priceline is throttling us"));
+      warn.appendChild(
+        el(
+          "div",
+          "pclnrev-throttle-body",
+          "Requests stopped so we do not make it worse. Anything already read is " +
+            "kept for a week, so picking this up later costs nothing. Give it a " +
+            "few minutes, then press ↻."
+        )
+      );
+      body.appendChild(warn);
+    }
+
     body.appendChild(el("div", "pclnrev-bignum", named + " of " + state.size + " named"));
     body.appendChild(
       el("div", "pclnrev-note", "Free pass compared against " + pool.length + " hotels in this search.")
     );
+    if (cacheHits || fetched) {
+      body.appendChild(
+        el(
+          "div",
+          "pclnrev-note",
+          "Deal records: " + cacheHits + " reused from cache, " + fetched + " fetched."
+        )
+      );
+    }
     if (saveCount) {
       body.appendChild(
         el(

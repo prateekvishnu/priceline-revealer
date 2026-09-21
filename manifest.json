@@ -3,35 +3,72 @@
   "name": "Priceline Express Deal Revealer",
   "version": "1.0.0",
   "description": "Works out which hotel a Priceline Express Deal actually is by fingerprinting its amenities and review stats against the guaranteed candidates.",
-  "permissions": ["tabs"],
-  "host_permissions": ["https://www.priceline.com/*"],
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://www.priceline.com/*"
+  ],
   "background": {
     "service_worker": "src/background.js",
     "type": "module"
   },
   "content_scripts": [
     {
-      "matches": ["https://www.priceline.com/relax/at/*"],
-      "js": ["src/listings-core.js", "src/extractor.js"],
+      "matches": [
+        "https://www.priceline.com/relax/at/*"
+      ],
+      "js": [
+        "src/listings-core.js",
+        "src/extractor.js"
+      ],
       "world": "MAIN",
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://www.priceline.com/relax/at/*"],
-      "js": ["src/bridge.js"],
-      "css": ["src/panel.css"],
+      "matches": [
+        "https://www.priceline.com/relax/at/*"
+      ],
+      "js": [
+        "src/bridge.js"
+      ],
+      "css": [
+        "src/panel.css"
+      ],
       "world": "ISOLATED",
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://www.priceline.com/relax-ui/listings*"],
-      "js": ["src/listings-core.js", "src/graph.js", "src/listings.js"],
-      "css": ["src/panel.css"],
+      "matches": [
+        "https://www.priceline.com/relax-ui/listings*"
+      ],
+      "js": [
+        "src/listings-core.js",
+        "src/store.js",
+        "src/graph.js",
+        "src/listings.js"
+      ],
+      "css": [
+        "src/panel.css"
+      ],
       "world": "ISOLATED",
       "run_at": "document_idle"
     }
   ],
   "action": {
-    "default_title": "Reveal this Express Deal"
+    "default_title": "Reveal this Express Deal",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   }
 }
